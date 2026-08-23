@@ -1,4 +1,4 @@
-# Quadrants
+# To Do Matrix
 
 A todo app built around the **Eisenhower matrix**: every task lives in one of
 four quadrants, decided by two questions — *is it important?* and *is it

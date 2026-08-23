@@ -105,7 +105,7 @@ function MatrixView({
       <header className="app__header">
         <h1 className="app__brand">
           <img src="/favicon.svg" alt="" className="app__brand-logo" />
-          Quadrants
+          To Do Matrix
         </h1>
       </header>
       <main className="matrix" aria-label="Eisenhower matrix">

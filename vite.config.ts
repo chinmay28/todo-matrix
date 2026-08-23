@@ -17,8 +17,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'favicon.svg'],
       manifest: {
-        name: 'Quadrants',
-        short_name: 'Quadrants',
+        name: 'To Do Matrix',
+        short_name: 'To Do Matrix',
         description:
           'A todo list split into four quadrants by importance and urgency.',
         theme_color: '#18181b',
