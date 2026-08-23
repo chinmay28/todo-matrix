@@ -75,6 +75,16 @@ button {
   padding-right: max(0.75rem, env(safe-area-inset-right));
 }
 
+/* iOS home-screen apps can compute even lvh against a phantom Safari toolbar
+   (worst on plain-HTTP web-clip installs) — no viewport unit is immune, so
+   pinStandaloneViewport() (src/standalone.ts) measures the real screen and
+   writes it into --app-height. The class and the variable are set together,
+   only on iOS standalone; everywhere else the lvh rules above stand. */
+.ios-standalone .app,
+.ios-standalone .devflash {
+  height: var(--app-height);
+}
+
 .app__header {
   display: flex;
   align-items: center;
