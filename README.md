@@ -31,6 +31,35 @@ offline.
 - **Nothing is mandatory beyond a title.** No due dates, tags, or projects —
   the quadrant *is* the prioritization.
 
+## Quick start (self-host)
+
+One command, run as root on Ubuntu / Debian / Raspberry Pi OS, installs
+To Do Matrix as a hardened systemd service (same installer shape as
+CountRoster's):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/chinmay28/todo-matrix/main/scripts/quickstart.sh | sudo bash
+```
+
+It clones the repo (with the full commit graph, so the version stamps
+correctly), builds the PWA with Vite, and serves `dist/` with
+`scripts/serve.mjs` — a dependency-free `node:http` static server (SPA
+fallback, immutable caching for hashed assets, `no-cache` for the app shell
+and service worker so deploys are picked up). **Re-run the same command to
+upgrade**: the new bundle builds while the old one keeps serving, the web
+root is swapped only after a successful build, and a failed health check
+rolls back to the previous web root. There is no server-side data — tasks
+live in each browser — so an upgrade can never lose them.
+
+Configure with environment variables (all optional): `TODOMATRIX_REPO`,
+`TODOMATRIX_REF`, `TODOMATRIX_USER`, `TODOMATRIX_PREFIX`, `PORT` (default
+8688), `HOST`, `INSTALL_NODE` — see the header of
+[`scripts/quickstart.sh`](scripts/quickstart.sh).
+
+> Installing as an app and offline use need **HTTPS** (the service worker
+> requires a secure context): front the service with Tailscale Serve or a
+> reverse proxy (Caddy/nginx) rather than exposing plain HTTP.
+
 ## Local-first
 
 Tasks are stored in the browser's `localStorage` on the device — there is no
@@ -73,10 +102,13 @@ the machine's address; `.ts.net` hosts (Tailscale MagicDNS) are pre-allowed.
 ## Layout
 
 ```
-src/types.ts   quadrant definitions + the importance/urgency → quadrant mapping
-src/store.ts   state reducer, task queries, localStorage persistence
-src/app.tsx    all UI: matrix overview, quadrant focus view, bottom sheets
-src/styles.css mobile-first styling, dark mode, safe-area insets
+src/types.ts          quadrant definitions + the importance/urgency → quadrant mapping
+src/store.ts          state reducer, task queries, localStorage persistence
+src/app.tsx           all UI: matrix overview, quadrant focus view, bottom sheets
+src/styles.css        mobile-first styling, dark mode, safe-area insets
+scripts/version.mjs   the one place the version number is assembled
+scripts/serve.mjs     dependency-free static server (production serving path)
+scripts/quickstart.sh one-command self-host installer / upgrader (systemd)
 ```
 
 The reducer and persistence layer are pure and UI-free (`store.ts`), so the
