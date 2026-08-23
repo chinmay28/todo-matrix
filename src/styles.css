@@ -55,12 +55,19 @@ button {
 }
 
 .app {
+  position: relative;
   max-width: 720px;
   margin: 0 auto;
-  /* dvh tracks the visible area as mobile browser toolbars collapse; the
-     100vh line is the fallback for engines without dvh. */
-  height: 100vh;
-  height: 100dvh;
+  /* Height comes from the *large* viewport unit (lvh) — the same fix
+     CountRoster landed: on this app's target (an installed PWA in standalone
+     mode) the real screen height is constant, but window.innerHeight / dvh /
+     visualViewport under-report it at rest and only jump to the true value
+     after an interaction, which left a ~60px dead strip under the matrix.
+     lvh is the full screen and stays stable across keyboard show/dismiss and
+     small/large viewport switches, so the shell sits flush with no JS. */
+  height: 100vh; /* fallback for engines without the large-viewport unit */
+  height: 100lvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 0 0.75rem;
@@ -159,8 +166,13 @@ button {
    clock: the veil fades, the lockup lands with a small overshoot and drifts
    out. Timing kept in sync with DEV_FLASH_MS in devmark.tsx. */
 .devflash {
+  /* Portalled to the body, so it can't lean on the shell's lvh height —
+     take the large viewport explicitly instead of trusting `bottom: 0`
+     against the under-reported one. */
   position: fixed;
   inset: 0;
+  height: 100vh; /* fallback for engines without the large-viewport unit */
+  height: 100lvh;
   /* Above every other layer, sheets included. */
   z-index: 200;
   display: grid;
@@ -342,7 +354,10 @@ button {
 /* --- Floating add button ---------------------------------------------- */
 
 .fab {
-  position: fixed;
+  /* Float against the shell (not the layout viewport) so it tracks the
+     shell's true bottom from the first paint — `fixed` would pin it to the
+     same under-reported viewport the shell no longer trusts. */
+  position: absolute;
   right: max(1.1rem, env(safe-area-inset-right));
   bottom: max(1.1rem, env(safe-area-inset-bottom));
   width: 3.4rem;
@@ -546,7 +561,10 @@ button {
 /* --- Bottom sheets ----------------------------------------------------- */
 
 .sheet {
-  position: fixed;
+  /* Absolute within the shell (which is the full screen at 100lvh), for the
+     same reason as the FAB: `fixed` trusts the under-reported viewport and
+     would leave the sheet hovering above the real bottom. */
+  position: absolute;
   inset: 0;
   z-index: 40;
   display: flex;
