@@ -35,7 +35,7 @@ offline.
 
 Tasks are stored in the browser's `localStorage` on the device — there is no
 server and no account. Loading is defensive (a corrupt value is dropped, never
-thrown) and the storage key is versioned (`todo-quadrants/v1`) so a future
+thrown) and the storage key is versioned (`todo-matrix/v1`) so a future
 schema change can migrate.
 
 ## Commands

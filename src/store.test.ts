@@ -102,13 +102,13 @@ describe('persistence', () => {
 
   it('returns an empty state for missing, corrupt, or foreign values', () => {
     expect(load(memoryStorage())).toEqual(emptyState);
-    expect(load(memoryStorage({ 'todo-quadrants/v1': 'not json' }))).toEqual(emptyState);
-    expect(load(memoryStorage({ 'todo-quadrants/v1': '{"tasks": 42}' }))).toEqual(emptyState);
+    expect(load(memoryStorage({ 'todo-matrix/v1': 'not json' }))).toEqual(emptyState);
+    expect(load(memoryStorage({ 'todo-matrix/v1': '{"tasks": 42}' }))).toEqual(emptyState);
   });
 
   it('drops invalid tasks but keeps valid ones', () => {
     const storage = memoryStorage({
-      'todo-quadrants/v1': JSON.stringify({
+      'todo-matrix/v1': JSON.stringify({
         tasks: [
           { id: 'a', title: 'ok', quadrant: 'do', createdAt: T0, completedAt: null },
           { id: 'b', title: 'bad quadrant', quadrant: 'nope', createdAt: T0, completedAt: null },

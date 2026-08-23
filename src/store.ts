@@ -72,7 +72,7 @@ export function doneTasks(state: State, quadrant: QuadrantId): Task[] {
 // a corrupt or foreign value must never brick the app, so anything that
 // doesn't parse into valid tasks is dropped rather than thrown.
 
-const STORAGE_KEY = 'todo-quadrants/v1';
+const STORAGE_KEY = 'todo-matrix/v1';
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
