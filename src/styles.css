@@ -1,0 +1,538 @@
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --danger: #ef4444;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  /* Quadrant accents — red Do, blue Schedule, amber Delegate, gray Later. */
+  --c-do: #ef4444;
+  --c-schedule: #3b82f6;
+  --c-delegate: #f59e0b;
+  --c-later: #71717a;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #18181b;
+    --surface: #232327;
+    --text: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #3f3f46;
+    --c-do: #f87171;
+    --c-schedule: #60a5fa;
+    --c-delegate: #fbbf24;
+    --c-later: #a1a1aa;
+  }
+}
+
+/* Each quadrant-scoped block picks its accent from these. */
+.q-do { --q: var(--c-do); }
+.q-schedule { --q: var(--c-schedule); }
+.q-delegate { --q: var(--c-delegate); }
+.q-later { --q: var(--c-later); }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+  /* The matrix is a fixed one-screen layout; don't let iOS rubber-band it. */
+  overscroll-behavior-y: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  /* dvh tracks the visible area as mobile browser toolbars collapse; the
+     100vh line is the fallback for engines without dvh. */
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0.75rem;
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+
+.app__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.25rem;
+  padding-top: max(0.7rem, env(safe-area-inset-top));
+  border-bottom: 1px solid var(--border);
+}
+
+.app__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.app__brand-logo {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.35rem;
+  display: block;
+}
+
+/* --- Matrix overview -------------------------------------------------- */
+
+.matrix {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
+}
+
+.matrix__axis {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  align-self: center;
+  justify-self: center;
+}
+
+.matrix__axis--row {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.quadrant {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  min-height: 0;
+  overflow: hidden;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--q);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.quadrant:active {
+  filter: brightness(0.96);
+}
+
+.quadrant__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.quadrant__name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--q);
+}
+
+.quadrant__count {
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--q) 16%, transparent);
+  color: var(--q);
+  font-weight: 700;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.quadrant__hint {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.quadrant__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.15rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.quadrant__task {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 0.85rem;
+  position: relative;
+}
+
+.quadrant__task::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--q);
+  opacity: 0.7;
+}
+
+.quadrant__more,
+.quadrant__empty {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* --- Floating add button ---------------------------------------------- */
+
+.fab {
+  position: fixed;
+  right: max(1.1rem, env(safe-area-inset-right));
+  bottom: max(1.1rem, env(safe-area-inset-bottom));
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 1.8rem;
+  line-height: 1;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  z-index: 30;
+}
+
+/* --- Focus view (one quadrant) ---------------------------------------- */
+
+.focus__header {
+  gap: 0.5rem;
+}
+
+.focus__back {
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0 0 0.2rem;
+  cursor: pointer;
+}
+
+.focus__title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.focus__name {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--q);
+}
+
+.focus__hint {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.focus {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.5rem 0 1rem;
+}
+
+.focus__empty {
+  color: var(--muted);
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+.tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.task {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.task__check {
+  flex: none;
+  width: 3rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--q, var(--text));
+  position: relative;
+}
+
+/* The visible checkbox circle inside the larger tap target. */
+.task__check::before {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 2px solid var(--q, var(--muted));
+  border-radius: 999px;
+}
+
+.task--done .task__check::before {
+  background: color-mix(in srgb, var(--q, var(--muted)) 20%, transparent);
+}
+
+.task__body {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 0.8rem 0.8rem 0.8rem 0;
+  font-size: 0.95rem;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.task--done .task__body {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.done {
+  margin-top: 1rem;
+}
+
+.done__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.done__toggle,
+.done__clear {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4rem 0.25rem;
+  cursor: pointer;
+}
+
+.done__clear {
+  color: var(--danger);
+}
+
+.tasks--done {
+  margin-top: 0.35rem;
+  opacity: 0.75;
+}
+
+/* --- Quick add (pinned under the focus list) --------------------------- */
+
+.quickadd {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.quickadd__input,
+.addsheet__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  /* 16px floor: below that iOS Safari zooms the page on focus. */
+  font-size: 1rem;
+}
+
+.quickadd__submit {
+  flex: none;
+  padding: 0 1.1rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--q, var(--text));
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quickadd__submit:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* --- Bottom sheets ----------------------------------------------------- */
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.sheet__panel {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--radius) var(--radius) 0 0;
+  box-shadow: var(--shadow-lg);
+  padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.addsheet,
+.tasksheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.addsheet__toggles,
+.tasksheet__moves {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 0.55rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip--on {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+/* Move chips borrow their target quadrant's accent so the destination is
+   recognizable at a glance. */
+.tasksheet__moves .chip {
+  border-color: color-mix(in srgb, var(--q) 55%, transparent);
+  color: var(--q);
+}
+
+.addsheet__target {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.addsheet__target strong {
+  color: var(--q);
+}
+
+.tasksheet__label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.sheet__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.2rem;
+}
+
+.btn {
+  padding: 0.65rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn--primary {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.btn--primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn--danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  margin-right: auto;
+}
