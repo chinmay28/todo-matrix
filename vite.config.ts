@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { appVersion } from './build-version.ts';
 
 /**
  * Hostnames the dev/preview server will answer to, in addition to localhost.
@@ -11,11 +12,13 @@ import { VitePWA } from 'vite-plugin-pwa';
 const allowedHosts = ['.ts.net'];
 
 export default defineConfig({
+  // Stamp the version into the bundle — the browser has no git to ask.
+  define: { __APP_VERSION__: JSON.stringify(appVersion()) },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg', 'favicon.svg'],
+      includeAssets: ['icon.svg', 'favicon.svg', 'dev-badge.png', 'dev-badge-full.png'],
       manifest: {
         name: 'To Do Matrix',
         short_name: 'To Do Matrix',

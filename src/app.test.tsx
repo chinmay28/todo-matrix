@@ -83,6 +83,18 @@ describe('App', () => {
     expect(screen.queryByText('New idea')).not.toBeInTheDocument();
   });
 
+  it('shows the running version and flashes the developer badge', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    // Never the literal string — the patch number is the commit count.
+    expect(screen.getByText(/^v\d+\.\d+\.\d+$/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Show the developer badge' }));
+    expect(screen.getByAltText(/Built by CM Hegday/)).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByAltText(/Built by CM Hegday/)).not.toBeInTheDocument();
+  });
+
   it('persists tasks across a reload', async () => {
     const user = userEvent.setup();
     const first = render(<App />);

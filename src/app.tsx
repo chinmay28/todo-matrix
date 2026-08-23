@@ -23,6 +23,8 @@ import {
   type QuadrantId,
   type Task,
 } from './types.js';
+import { DevMark } from './devmark.js';
+import { APP_VERSION } from './version.js';
 
 const PREVIEW_COUNT = 3;
 
@@ -103,10 +105,18 @@ function MatrixView({
   return (
     <>
       <header className="app__header">
+        {/* The brand lockup: mark, then the name over the running version.
+            The version belongs here rather than in a footer — it tells you at
+            a glance whether the build you're looking at is the one you just
+            deployed. */}
         <h1 className="app__brand">
           <img src="/favicon.svg" alt="" className="app__brand-logo" />
-          To Do Matrix
+          <span className="app__brand-text">
+            To Do Matrix
+            <span className="app__brand-version">{APP_VERSION}</span>
+          </span>
         </h1>
+        <DevMark />
       </header>
       <main className="matrix" aria-label="Eisenhower matrix">
         <div className="matrix__corner" aria-hidden="true" />

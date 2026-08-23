@@ -71,6 +71,7 @@ button {
 .app__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.6rem;
   padding: 0.7rem 0.25rem;
   padding-top: max(0.7rem, env(safe-area-inset-top));
@@ -79,11 +80,30 @@ button {
 
 .app__brand {
   display: inline-flex;
-  align-items: center;
+  /* The brand is a two-line lockup (name over version), so hang everything
+     from the top rather than centring against the taller text block. */
+  align-items: flex-start;
   gap: 0.45rem;
   font-weight: 700;
   font-size: 1.15rem;
   margin: 0;
+}
+
+.app__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+/* The running build, vYEAR.MONTH.<commit count> — see src/version.ts. Tabular
+   figures so the number doesn't shimmy as the patch count rolls over. */
+.app__brand-version {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--muted);
 }
 
 .app__brand-logo {
@@ -91,6 +111,113 @@ button {
   height: 1.5rem;
   border-radius: 0.35rem;
   display: block;
+}
+
+/* --- Developer credit mark --------------------------------------------- */
+
+.devmark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  /* The badge itself stops reading below 36px, so the target grows around it
+     rather than the artwork growing with it. */
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  /* The mark hangs off the header on a hairline divider. */
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+  padding: 0 0 0 12px;
+  margin-left: 4px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.devmark__img {
+  display: block;
+  /* 36px is the smallest size the badge's wordmark still reads at — below it
+     the mark collapses into an anonymous dark dot. */
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  /* The artwork is a dark badge in its own right; keep its ground dark in
+     both themes. */
+  background: #101010;
+  box-shadow: 0 0 0 1px var(--border);
+  opacity: 0.85;
+  transition: opacity 140ms ease, box-shadow 140ms ease;
+}
+
+.devmark:hover .devmark__img {
+  opacity: 1;
+  box-shadow: 0 0 0 1px var(--muted);
+}
+
+/* The badge thrown up full screen for a beat. Everything here is on one
+   clock: the veil fades, the lockup lands with a small overshoot and drifts
+   out. Timing kept in sync with DEV_FLASH_MS in devmark.tsx. */
+.devflash {
+  position: fixed;
+  inset: 0;
+  /* Above every other layer, sheets included. */
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  cursor: pointer;
+  background: rgba(10, 14, 23, 0.78);
+  backdrop-filter: saturate(1.2) blur(14px);
+  animation: dev-veil 3s ease-in-out forwards;
+}
+
+.devflash__lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  /* The scale lives on the lockup so the badge and handle never drift apart
+     mid-animation. */
+  animation: dev-badge 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.devflash__badge {
+  width: min(64vmin, 26rem);
+  height: min(64vmin, 26rem);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.devflash__handle {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: clamp(0.85rem, 3.2vmin, 1.1rem);
+  letter-spacing: 0.08em;
+  /* The veil is dark in both themes, so the handle is fixed light. */
+  color: rgba(228, 231, 236, 0.85);
+}
+
+@keyframes dev-veil {
+  0% { opacity: 0; }
+  7% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Lands with a small overshoot, then drifts out as the veil clears. */
+@keyframes dev-badge {
+  0% { transform: scale(0.82); }
+  14% { transform: scale(1.02); }
+  22% { transform: scale(1); }
+  82% { transform: scale(1); }
+  100% { transform: scale(1.06); }
+}
+
+/* The cross-fade stays — it isn't motion — but the scale doesn't. */
+@media (prefers-reduced-motion: reduce) {
+  .devflash__lockup {
+    animation: none;
+  }
 }
 
 /* --- Matrix overview -------------------------------------------------- */

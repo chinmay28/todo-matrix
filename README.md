@@ -38,6 +38,22 @@ server and no account. Loading is defensive (a corrupt value is dropped, never
 thrown) and the storage key is versioned (`todo-matrix/v1`) so a future
 schema change can migrate.
 
+## Versioning
+
+Versions are calendar-based, `vYEAR.MONTH.<commit count>` (the scheme shared
+with [sand-vault](https://github.com/chinmay28/sand-vault)): `v2026.8.311` is
+the 311th commit on the 2026.8 line. `Year`/`Month` are constants in
+`scripts/version.mjs` — the one place the number is assembled — and the patch
+number can only come from git, so it's stamped into the bundle at build time
+(Vite `define`). An unstamped build reports patch `0`.
+
+The count needs the full commit graph: a `--depth 1` clone answers it with
+`1`, silently, so `version.mjs` refuses a shallow repo (reports 0 instead of
+the fake count). Clone with `--filter=blob:none` if you want a cheap clone
+that still versions correctly. The running version shows under the app name
+in the header; **don't assert the literal version string in a test** — it
+changes with every commit.
+
 ## Commands
 
 Requires Node >= 20.
