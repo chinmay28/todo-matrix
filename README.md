@@ -121,7 +121,7 @@ src/app.tsx           all UI: matrix overview, quadrant focus view, bottom sheet
 src/styles.css        mobile-first styling, dark mode, safe-area insets
 scripts/version.mjs   the one place the version number is assembled
 scripts/serve.mjs     dependency-free static server (production serving path)
-scripts/quickstart.sh one-command self-host installer / upgrader (systemd)
+scripts/quickstart.sh one-command self-host installer / upgrader / uninstaller (systemd)
 ```
 
 The reducer and persistence layer are pure and UI-free (`store.ts`), so the
