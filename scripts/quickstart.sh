@@ -6,6 +6,14 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/chinmay28/todo-matrix/main/scripts/quickstart.sh | sudo bash
 #
+# and the same command with a flag takes it away again:
+#
+#   curl -fsSL https://raw.githubusercontent.com/chinmay28/todo-matrix/main/scripts/quickstart.sh | sudo bash -s -- --uninstall
+#
+# Uninstalling stops and removes the service and deletes the install prefix
+# (source, web root, serve.mjs). It keeps the service user, and Node if this
+# script installed it. Tasks are never touched — they were never on the server.
+#
 # The app is a static PWA — tasks live in each browser's localStorage, and the
 # server's only job is to hand out the built bundle. So unlike CountRoster's
 # installer there is no database, no backups, and nothing on the server that an
@@ -60,6 +68,14 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 command -v systemctl >/dev/null 2>&1 || die "systemd is required (no systemctl found)."
 
+# Parsed before anything is installed or fetched, so an uninstall never pulls
+# in Node or clones the repo just to remove it again.
+case "${1:-}" in
+  --uninstall) UNINSTALL=1 ;;
+  "")          UNINSTALL=0 ;;
+  *)           die "Unknown option: $1 (only --uninstall is supported)" ;;
+esac
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -75,6 +91,31 @@ SRC_DIR="$PREFIX/src"
 WEB_ROOT="$PREFIX/www"
 SERVICE_NAME="todo-matrix"
 UNIT_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
+
+# Uninstall undoes exactly what an install writes: the unit and the prefix
+# (source, web root and its .prev/.new, the pinned serve.mjs — the service
+# user's home is the prefix too). It resolves the same TODOMATRIX_* overrides
+# as the install, and runs before the checkout detection below, so a checkout
+# the user cloned themselves is never deleted, only the one this script made.
+# Every step tolerates its target being gone, so a second run is a no-op.
+if [ "$UNINSTALL" = 1 ]; then
+  case "$PREFIX" in
+    ""|/) die "Refusing to uninstall with TODOMATRIX_PREFIX='$PREFIX'." ;;
+  esac
+  log "Stopping and removing the ${SERVICE_NAME} service"
+  systemctl disable --now "${SERVICE_NAME}.service" >/dev/null 2>&1 || true
+  rm -f "$UNIT_PATH"
+  systemctl daemon-reload
+  systemctl reset-failed "${SERVICE_NAME}.service" >/dev/null 2>&1 || true
+  rm -rf "$PREFIX"
+  echo
+  log "Removed. The server held no data — tasks live in each browser's"
+  log "localStorage and are untouched. Node (if this script installed it) stays."
+  if id -u "$SVC_USER" >/dev/null 2>&1; then
+    log "Delete the service user with: sudo userdel $SVC_USER"
+  fi
+  exit 0
+fi
 
 # If this script is being run from inside an existing checkout (sudo ./scripts/
 # quickstart.sh) rather than piped from curl, build that checkout in place.

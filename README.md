@@ -51,6 +51,19 @@ root is swapped only after a successful build, and a failed health check
 rolls back to the previous web root. There is no server-side data — tasks
 live in each browser — so an upgrade can never lose them.
 
+To uninstall, run the same command with `--uninstall`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/chinmay28/todo-matrix/main/scripts/quickstart.sh | sudo bash -s -- --uninstall
+```
+
+It stops and disables the `todo-matrix` service, removes its unit file and
+deletes the install prefix (`/opt/todo-matrix`: source, web root and
+`serve.mjs`). It keeps the `todomatrix` service user (it prints the `userdel`
+command) and Node; your tasks are in each browser, so they are untouched. It
+is safe to run when nothing is installed. Set the same `TODOMATRIX_*`
+variables you installed with if you changed the prefix or user.
+
 Configure with environment variables (all optional): `TODOMATRIX_REPO`,
 `TODOMATRIX_REF`, `TODOMATRIX_USER`, `TODOMATRIX_PREFIX`, `PORT` (default
 8688), `HOST`, `INSTALL_NODE` — see the header of
