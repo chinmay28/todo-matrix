@@ -12,7 +12,7 @@ without one is an ordinary commit and is skipped; a tag without one fails.
 `## Unreleased` never matches a version — rename it to the version when
 cutting the release.
 
-## Unreleased
+## v2026.11.13
 
 **Downloads:** **`todo-matrix.apk`** (new: To Do Matrix for Android — on the
 phone, open
