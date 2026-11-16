@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- src/styles.css @media (prefers-color-scheme: dark). -->
+    <color name="tm_bg">#FF18181B</color>
+    <color name="tm_surface">#FF232327</color>
+    <color name="tm_text">#FFF4F4F5</color>
+    <color name="tm_muted">#FFA1A1AA</color>
+    <color name="tm_border">#FF3F3F46</color>
+    <color name="tm_do">#FFF87171</color>
+    <color name="tm_schedule">#FF60A5FA</color>
+    <color name="tm_delegate">#FFFBBF24</color>
+    <color name="tm_later">#FFA1A1AA</color>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shortcut icon: the quadrant's colour (src/styles.css, the c-do token) with a plus. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#FFEF4444"
+        android:pathData="M14,8h20a6,6 0,0 1,6 6v20a6,6 0,0 1,-6 6h-20a6,6 0,0 1,-6 -6v-20a6,6 0,0 1,6 -6z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M22,15h4v7h7v4h-7v7h-4v-7h-7v-4h7z" />
+</vector>

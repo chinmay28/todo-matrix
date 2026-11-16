@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- No permissions at all, INTERNET included. The web app is inside the
+         APK and served by WebViewAssetLoader from the app's own assets; no
+         request ever needs the network, and without the permission none can
+         be made. Saving a backup goes through MediaStore (no storage
+         permission from Android 10), opening one through the system picker. -->
+
+    <!-- allowBackup off: the tasks live in the web view's storage, whose files
+         are not safe to copy while the app runs. A backup is the JSON export,
+         which the person keeps where they like. -->
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.TodoMatrix">
+
+        <!-- Not uiMode: a light/dark switch recreates the activity, so the
+             page's prefers-color-scheme follows it (the tasks are in
+             localStorage; nothing is lost but an open sheet). -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|density"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- The launcher shortcuts and the widget's cells: the add sheet,
+                 pre-set to a quadrant (core/Launch.kt). -->
+            <intent-filter>
+                <action android:name="io.github.chinmay28.todomatrix.ADD" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!-- Text shared from another app becomes a new task's title. -->
+            <intent-filter android:label="@string/share_label">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <activity
+            android:name=".AboutActivity"
+            android:exported="true"
+            android:label="@string/about_title">
+            <intent-filter>
+                <action android:name="io.github.chinmay28.todomatrix.ABOUT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- "Save to Downloads" at the front of the share sheet. Exported
+             because the share sheet launches it, but it copies only from the
+             app's own FileProvider (see SaveToDownloadsActivity). -->
+        <activity
+            android:name=".SaveToDownloadsActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="@string/save_to_downloads"
+            android:noHistory="true"
+            android:theme="@style/Theme.TodoMatrix.Invisible" />
+
+        <receiver
+            android:name=".CountsWidget"
+            android:exported="true"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_counts_info" />
+        </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>

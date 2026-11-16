@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press the icon: add straight into a quadrant (the add sheet opens
+     pre-set, through the page's #add hash — core/Launch.kt), or the About
+     screen. Launchers that show fewer than five drop the last. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_do"
+        android:shortcutId="add_do"
+        android:shortcutLongLabel="@string/shortcut_do_long"
+        android:shortcutShortLabel="@string/shortcut_do">
+        <intent
+            android:action="io.github.chinmay28.todomatrix.ADD"
+            android:targetClass="io.github.chinmay28.todomatrix.MainActivity"
+            android:targetPackage="io.github.chinmay28.todomatrix">
+            <extra android:name="quadrant" android:value="do" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_schedule"
+        android:shortcutId="add_schedule"
+        android:shortcutLongLabel="@string/shortcut_schedule_long"
+        android:shortcutShortLabel="@string/shortcut_schedule">
+        <intent
+            android:action="io.github.chinmay28.todomatrix.ADD"
+            android:targetClass="io.github.chinmay28.todomatrix.MainActivity"
+            android:targetPackage="io.github.chinmay28.todomatrix">
+            <extra android:name="quadrant" android:value="schedule" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_delegate"
+        android:shortcutId="add_delegate"
+        android:shortcutLongLabel="@string/shortcut_delegate_long"
+        android:shortcutShortLabel="@string/shortcut_delegate">
+        <intent
+            android:action="io.github.chinmay28.todomatrix.ADD"
+            android:targetClass="io.github.chinmay28.todomatrix.MainActivity"
+            android:targetPackage="io.github.chinmay28.todomatrix">
+            <extra android:name="quadrant" android:value="delegate" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_later"
+        android:shortcutId="add_later"
+        android:shortcutLongLabel="@string/shortcut_later_long"
+        android:shortcutShortLabel="@string/shortcut_later">
+        <intent
+            android:action="io.github.chinmay28.todomatrix.ADD"
+            android:targetClass="io.github.chinmay28.todomatrix.MainActivity"
+            android:targetPackage="io.github.chinmay28.todomatrix">
+            <extra android:name="quadrant" android:value="later" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="about"
+        android:shortcutShortLabel="@string/about_short">
+        <intent
+            android:action="io.github.chinmay28.todomatrix.ABOUT"
+            android:targetClass="io.github.chinmay28.todomatrix.AboutActivity"
+            android:targetPackage="io.github.chinmay28.todomatrix" />
+    </shortcut>
+</shortcuts>
