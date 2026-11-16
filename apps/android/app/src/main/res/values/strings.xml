@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">To Do Matrix</string>
+    <string name="tagline">Do · Schedule · Delegate · Later</string>
+    <string name="share_label">Add to To Do Matrix</string>
+    <string name="save_to_downloads">Save to Downloads</string>
+
+    <!-- Launcher shortcuts -->
+    <string name="shortcut_do">Add to Do</string>
+    <string name="shortcut_do_long">Add a task to Do</string>
+    <string name="shortcut_schedule">Add to Schedule</string>
+    <string name="shortcut_schedule_long">Add a task to Schedule</string>
+    <string name="shortcut_delegate">Add to Delegate</string>
+    <string name="shortcut_delegate_long">Add a task to Delegate</string>
+    <string name="shortcut_later">Add to Later</string>
+    <string name="shortcut_later_long">Add a task to Later</string>
+    <string name="about_short">About</string>
+
+    <!-- Main screen -->
+    <string name="load_failed">The app could not open its own pages.</string>
+    <string name="retry">Retry</string>
+    <string name="no_app_for_link">No app on this phone opens that link.</string>
+    <string name="bridge_unavailable">This phone\'s Android System WebView is too old to save files from the app. Update it from the Play Store.</string>
+
+    <!-- Files -->
+    <string name="saved_to_downloads">Saved %1$s to Downloads/To Do Matrix</string>
+    <string name="save_failed">Could not save %1$s: %2$s</string>
+    <string name="share_with">Share</string>
+
+    <!-- About -->
+    <string name="about_title">About To Do Matrix</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_body">An Eisenhower matrix for your tasks: every task is in one of four quadrants, decided by two questions — is it important, and is it urgent?</string>
+    <string name="about_storage">Your tasks are kept only on this phone, inside the app. Nothing is sent anywhere — the app has no network access at all. To keep a copy or move them to another device, use ⋯ → Export tasks on the matrix; uninstalling the app or clearing its storage deletes them.</string>
+    <string name="about_source">Source code</string>
+    <string name="about_source_url">https://github.com/chinmay28/todo-matrix</string>
+    <string name="about_license">Free software under the GNU AGPL-3.0.</string>
+    <string name="dev_badge_label">Show the developer badge</string>
+    <string name="dev_badge_alt">Built by CM Hegday — 0x434d</string>
+    <string name="dev_handle">github.com/chinmay28</string>
+
+    <!-- Widget -->
+    <string name="widget_label">To Do Matrix</string>
+    <string name="widget_description">Open tasks in each quadrant. Tap one to add to it.</string>
+    <string name="widget_unknown">–</string>
+    <string name="q_do">Do</string>
+    <string name="q_schedule">Schedule</string>
+    <string name="q_delegate">Delegate</string>
+    <string name="q_later">Later</string>
+</resources>

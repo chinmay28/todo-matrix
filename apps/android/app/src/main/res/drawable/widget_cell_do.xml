@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A widget cell: the page's quadrant card, a surface with its accent edge. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/tm_surface" />
+    <stroke android:width="2dp" android:color="@color/tm_do" />
+    <corners android:radius="14dp" />
+</shape>

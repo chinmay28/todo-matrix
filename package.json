@@ -9,10 +9,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:android": "tsc --noEmit && vite build --mode android --outDir dist-android --emptyOutDir",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run && node scripts/icons.mjs --check",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

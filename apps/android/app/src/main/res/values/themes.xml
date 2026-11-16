@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Day/night with the phone, like the page: the web view reports the
+         theme to the page as prefers-color-scheme, and the window behind it
+         is the page's own background, so nothing flashes white on a dark
+         phone while it loads. -->
+    <style name="Theme.TodoMatrix" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/tm_text</item>
+        <item name="colorOnPrimary">@color/tm_bg</item>
+        <item name="colorSecondary">@color/tm_schedule</item>
+        <item name="android:colorBackground">@color/tm_bg</item>
+        <item name="colorSurface">@color/tm_surface</item>
+        <item name="android:windowBackground">@color/tm_bg</item>
+    </style>
+
+    <style name="Theme.TodoMatrix.Invisible" parent="Theme.TodoMatrix">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+    <!-- A circle, for the developer badge (36dp in the corner, full screen in
+         the flash), as the web app crops it with border-radius: 50%. -->
+    <style name="ShapeAppearance.TodoMatrix.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+</resources>

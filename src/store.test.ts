@@ -3,6 +3,7 @@ import {
   doneTasks,
   emptyState,
   load,
+  openCounts,
   openTasks,
   reduce,
   save,
@@ -117,5 +118,37 @@ describe('persistence', () => {
       }),
     });
     expect(load(storage).tasks.map((t) => t.id)).toEqual(['a']);
+  });
+});
+
+describe('import and counts', () => {
+  const t = (id: string, quadrant: 'do' | 'schedule' | 'delegate' | 'later', title = id) => ({
+    id,
+    title,
+    quadrant,
+    createdAt: T0,
+    completedAt: null,
+  });
+
+  it('merges by id: the backup wins for a task both hold, new tasks follow', () => {
+    const s0: State = { tasks: [t('a', 'do'), t('b', 'later')] };
+    const s1 = reduce(s0, { type: 'import', tasks: [t('b', 'schedule', 'b, moved'), t('c', 'delegate')] });
+    expect(s1.tasks.map((x) => [x.id, x.quadrant, x.title])).toEqual([
+      ['a', 'do', 'a'],
+      ['b', 'schedule', 'b, moved'],
+      ['c', 'delegate', 'c'],
+    ]);
+  });
+
+  it('never removes a task the device already has', () => {
+    const s0: State = { tasks: [t('a', 'do')] };
+    expect(reduce(s0, { type: 'import', tasks: [] })).toEqual(s0);
+  });
+
+  it('counts open tasks per quadrant, every quadrant present', () => {
+    let s: State = { tasks: [t('a', 'do'), t('b', 'do'), t('c', 'later')] };
+    s = reduce(s, { type: 'toggle', id: 'b', at: T1 });
+    expect(openCounts(s)).toEqual({ do: 1, schedule: 0, delegate: 0, later: 1 });
+    expect(openCounts(emptyState)).toEqual({ do: 0, schedule: 0, delegate: 0, later: 0 });
   });
 });

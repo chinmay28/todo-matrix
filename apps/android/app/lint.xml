@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- The adaptive icon lives in mipmap-anydpi-v26, as SAND Harbor's apps
+         have it, beside the legacy PNGs scripts/icons.mjs also writes. In a
+         plain mipmap-anydpi it would hide those PNGs from everything (lint's
+         IconXmlAndPng); -v26 says exactly when the XML applies. -->
+    <issue id="ObsoleteSdkInt">
+        <ignore path="src/main/res/mipmap-anydpi-v26" />
+    </issue>
+</lint>

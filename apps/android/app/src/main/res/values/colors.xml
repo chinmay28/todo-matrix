@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- src/styles.css :root, light. values-night/ has the dark theme. -->
+    <color name="tm_bg">#FFFAFAFA</color>
+    <color name="tm_surface">#FFFFFFFF</color>
+    <color name="tm_text">#FF1A1A1A</color>
+    <color name="tm_muted">#FF6B7280</color>
+    <color name="tm_border">#FFE5E7EB</color>
+    <color name="tm_do">#FFEF4444</color>
+    <color name="tm_schedule">#FF3B82F6</color>
+    <color name="tm_delegate">#FFF59E0B</color>
+    <color name="tm_later">#FF71717A</color>
+    <!-- The developer badge's veil: dark in both themes, as on the web. -->
+    <color name="dev_veil">#C70A0E17</color>
+    <color name="dev_handle">#D9E4E7EC</color>
+    <color name="dev_badge_ground">#FF101010</color>
+</resources>

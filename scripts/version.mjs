@@ -4,27 +4,27 @@
  *
  * Scheme (shared with sand-vault): vYEAR.MONTH.PATCH — a calendar version,
  * where PATCH is the repository's commit count, so `v2026.8.311` is the 311th
- * commit on the 2026.8 line. The month is not zero-padded; that keeps the
+ * commit, made in August 2026. The month is not zero-padded; that keeps the
  * string valid semver.
  *
- *   - YEAR/MONTH are the constants below — the single declaration in the
- *     tree. Bump them here when a release line opens; they are not taken from
- *     the build clock, which would move the version without a commit.
- *   - PATCH comes from `git rev-list --count HEAD`, which only exists at
- *     build time: Vite inlines it into the bundle via `define`.
+ *   - YEAR/MONTH are the month of the commit being built — its committer date,
+ *     in the committer's own timezone. Nobody bumps them: the line moves the
+ *     moment a commit lands in a new month, and a rebuild of an old commit is
+ *     still named what it shipped as, because a commit's date does not change.
+ *     Not the build clock, which would move the version without a commit.
+ *   - PATCH comes from `git rev-list --count HEAD`, which only exists at build
+ *     time: Vite inlines the string into the bundle via `define`, and the
+ *     Android build stamps the same string and count into the APK.
  *
  * Usage:
- *   node scripts/version.mjs            # print e.g. v2026.8.311
+ *   node scripts/version.mjs            # print e.g. v2026.11.311
  *   node scripts/version.mjs --patch    # print just the commit count (311)
+ *   node scripts/version.mjs --date     # print the commit's month (2026-11)
  *   import { appVersion } from './scripts/version.mjs'
  */
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-
-/** The open release line. Bump when a new line opens. */
-const Year = 2026;
-const Month = 8;
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -39,6 +39,33 @@ function git(args) {
   } catch {
     return null;
   }
+}
+
+/**
+ * The month of HEAD's commit as "YYYY-MM", or — with no commit to ask (a
+ * tarball, no git) — the month of the build clock, in UTC.
+ *
+ * The committer date rather than the author's: a change authored in September
+ * and landed in October is an October release. In the committer's own timezone
+ * rather than UTC, so the month is the one on the commit as git shows it.
+ */
+export function commitMonth() {
+  const iso = git(['log', '-1', '--format=%cI']);
+  const m = iso && /^(\d{4})-(\d{2})/.exec(iso);
+  if (m) {
+    return `${m[1]}-${m[2]}`;
+  }
+  const t = new Date();
+  return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+/** Year and month as numbers, the way the version string wants them. */
+function yearMonth() {
+  const [year, month] = commitMonth().split('-').map(Number);
+  if (!(month >= 1 && month <= 12)) {
+    throw new Error(`commit month ${commitMonth()} is not a calendar month`);
+  }
+  return { year, month };
 }
 
 /**
@@ -70,18 +97,23 @@ export function commitCount() {
 }
 
 /**
- * The full version string, `v`-prefixed to match how releases would be
- * tagged (v2026.8.311).
+ * The full version string, `v`-prefixed to match how releases are tagged
+ * (v2026.11.311).
+ *
+ * `--patch` / commitCount() and `--date` / commitMonth() stay bare: the
+ * release workflow passes them to the Android build as its version code.
  */
 export function appVersion() {
-  if (!(Month >= 1 && Month <= 12)) {
-    throw new Error(`Month = ${Month}; want a calendar month (1-12)`);
-  }
-  return `v${Year}.${Month}.${commitCount()}`;
+  const { year, month } = yearMonth();
+  return `v${year}.${month}.${commitCount()}`;
 }
 
 // Invoked directly (by the build scripts), print rather than export.
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  process.stdout.write(process.argv.includes('--patch') ? commitCount() : appVersion());
+  process.stdout.write(
+    process.argv.includes('--patch') ? commitCount()
+      : process.argv.includes('--date') ? commitMonth()
+        : appVersion(),
+  );
   process.stdout.write('\n');
 }

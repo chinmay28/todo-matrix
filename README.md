@@ -30,6 +30,22 @@ offline.
   (one tap, chips colored by destination), or delete it.
 - **Nothing is mandatory beyond a title.** No due dates, tags, or projects —
   the quadrant *is* the prioritization.
+- **Backups are a file you keep.** The **⋯** button exports every task as a
+  JSON file (or shares it, where the browser can share files) and imports one
+  back — merging, so an import never removes a task.
+- **Shortcuts open the add sheet pre-set.** `/#add=do` (or `schedule`,
+  `delegate`, `later`, optionally `&title=…`) opens the add sheet for that
+  quadrant; the installed PWA's long-press shortcuts and the Android app's
+  launcher shortcuts and share target all use it (`src/launch.ts`).
+
+## Android app
+
+**[To Do Matrix for Android](docs/android.md)** is the same app with nothing
+to host: the whole web app is inside the APK, so it needs no server and no
+network, and adds launcher shortcuts per quadrant, a share target, a
+home-screen widget and backups to Downloads. Install
+[`todo-matrix.apk`](https://github.com/chinmay28/todo-matrix/releases/latest/download/todo-matrix.apk)
+from the latest release. How it is built: [`apps/android`](apps/android/README.md).
 
 ## Quick start (self-host)
 
@@ -83,11 +99,16 @@ schema change can migrate.
 ## Versioning
 
 Versions are calendar-based, `vYEAR.MONTH.<commit count>` (the scheme shared
-with [sand-vault](https://github.com/chinmay28/sand-vault)): `v2026.8.311` is
-the 311th commit on the 2026.8 line. `Year`/`Month` are constants in
-`scripts/version.mjs` — the one place the number is assembled — and the patch
-number can only come from git, so it's stamped into the bundle at build time
-(Vite `define`). An unstamped build reports patch `0`.
+with [sand-vault](https://github.com/chinmay28/sand-vault)): `v2026.11.311` is
+the 311th commit, made in November 2026. YEAR.MONTH is the month of HEAD's
+**committer date**, in the committer's own timezone, so nobody bumps anything:
+the line moves with the first commit of a new month, and a rebuild of an old
+commit still names the version it shipped as. It is never the build clock.
+[`scripts/version.mjs`](scripts/version.mjs) is the one place the number is
+assembled (`--patch` prints the count, `--date` the commit's `YYYY-MM`); Vite
+inlines it into the bundle (`define`) and the Android build stamps the same
+string and count into the APK, so the header, the APK and the release agree.
+Without git (a tarball) it falls back to the build month and patch `0`.
 
 The count needs the full commit graph: a `--depth 1` clone answers it with
 `1`, silently, so `version.mjs` refuses a shallow repo (reports 0 instead of
@@ -103,9 +124,10 @@ Requires Node >= 20.
 ```bash
 npm install
 npm run dev        # http://localhost:5173 (also reachable on your tailnet)
-npm test           # vitest (store + component tests)
+npm test           # vitest (store, component, bridge tests) + the icon drift check
 npm run typecheck  # tsc --noEmit
 npm run build      # typecheck + production bundle in dist/
+npm run build:android  # the same bundle without the service worker, for the APK
 npm run preview    # serve the production build
 ```
 
@@ -117,12 +139,27 @@ the machine's address; `.ts.net` hosts (Tailscale MagicDNS) are pre-allowed.
 ```
 src/types.ts          quadrant definitions + the importance/urgency → quadrant mapping
 src/store.ts          state reducer, task queries, localStorage persistence
+src/backup.ts         the backup file format (export / import)
+src/launch.ts         the #add=… launch hash (shortcuts, share target)
+src/native.ts         detection of the Android app's bridge (window.todomatrixApp)
 src/app.tsx           all UI: matrix overview, quadrant focus view, bottom sheets
 src/styles.css        mobile-first styling, dark mode, safe-area insets
 scripts/version.mjs   the one place the version number is assembled
 scripts/serve.mjs     dependency-free static server (production serving path)
 scripts/quickstart.sh one-command self-host installer / upgrader / uninstaller (systemd)
+scripts/icons.mjs     derives every Android icon from public/icon.svg (npm run icons)
+apps/android/         the Android app (Kotlin; the web bundle in its assets)
+docs/android.md       the Android app's user guide
 ```
+
+## Releases
+
+Pushing a `v*` tag, a manual dispatch, or a push to `main` whose version has a
+`## vYEAR.MONTH.PATCH` section in [`CHANGELOG.md`](CHANGELOG.md) runs
+[`release.yml`](.github/workflows/release.yml): it refuses patch 0 and a tag
+that isn't its commit's version, then publishes `todo-matrix-<version>.tar.gz`
+(the built `www/` and `serve.mjs`), `todo-matrix.apk` and `SHA256SUMS`, with
+that changelog section as the release notes.
 
 The reducer and persistence layer are pure and UI-free (`store.ts`), so the
 component layer stays a thin shell over `dispatch` — and both are covered by

@@ -10,6 +10,7 @@ import {
   doneTasks,
   load,
   newId,
+  openCounts,
   openTasks,
   reduce,
   save,
@@ -25,6 +26,9 @@ import {
 } from './types.js';
 import { DevMark } from './devmark.js';
 import { APP_VERSION } from './version.js';
+import { parseLaunch, type Launch } from './launch.js';
+import { backupFileName, fromBackup, toBackup } from './backup.js';
+import { nativeApp } from './native.js';
 
 const PREVIEW_COUNT = 3;
 
@@ -33,12 +37,33 @@ export function App() {
     load(window.localStorage),
   );
   const [focus, setFocus] = useState<QuadrantId | null>(null);
-  const [adding, setAdding] = useState(false);
+  // The add sheet's starting point while it is open: the + button opens it
+  // blank, a launch (#add=… — a launcher shortcut or text shared to the
+  // Android app) opens it pre-set. `seq` remounts it for each new launch.
+  const [adding, setAdding] = useState<(Launch & { seq: number }) | null>(null);
+  const [menu, setMenu] = useState(false);
   const [selected, setSelected] = useState<Task | null>(null);
 
   useEffect(() => {
     save(window.localStorage, state);
+    // Inside the Android app, the home-screen widget shows these counts.
+    nativeApp()?.counts(openCounts(state));
   }, [state]);
+
+  useEffect(() => {
+    const take = () => {
+      const launch = parseLaunch(window.location.hash);
+      if (!launch) return;
+      // Consume it, so a reload (or Back) doesn't open the sheet again.
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      setSelected(null);
+      setMenu(false);
+      setAdding((prev) => ({ ...launch, seq: (prev?.seq ?? 0) + 1 }));
+    };
+    take();
+    window.addEventListener('hashchange', take);
+    return () => window.removeEventListener('hashchange', take);
+  }, []);
 
   // The sheet holds a snapshot; keep it in step with the live task so a
   // toggle elsewhere can't act on stale data (and close it if deleted).
@@ -52,7 +77,8 @@ export function App() {
         <MatrixView
           state={state}
           onOpen={setFocus}
-          onAdd={() => setAdding(true)}
+          onAdd={() => setAdding({ quadrant: null, title: '', seq: 0 })}
+          onMenu={() => setMenu(true)}
         />
       ) : (
         <FocusView
@@ -65,7 +91,10 @@ export function App() {
       )}
       {adding && (
         <AddSheet
-          onClose={() => setAdding(false)}
+          key={adding.seq}
+          initialQuadrant={adding.quadrant}
+          initialTitle={adding.title}
+          onClose={() => setAdding(null)}
           onAdd={(title, quadrant) => {
             dispatch({
               type: 'add',
@@ -74,8 +103,15 @@ export function App() {
               quadrant,
               at: new Date().toISOString(),
             });
-            setAdding(false);
+            setAdding(null);
           }}
+        />
+      )}
+      {menu && (
+        <MenuSheet
+          state={state}
+          onImport={(tasks) => dispatch({ type: 'import', tasks })}
+          onClose={() => setMenu(false)}
         />
       )}
       {selectedLive && (
@@ -97,10 +133,12 @@ function MatrixView({
   state,
   onOpen,
   onAdd,
+  onMenu,
 }: {
   state: State;
   onOpen: (q: QuadrantId) => void;
   onAdd: () => void;
+  onMenu: () => void;
 }) {
   return (
     <>
@@ -116,7 +154,17 @@ function MatrixView({
             <span className="app__brand-version">{APP_VERSION}</span>
           </span>
         </h1>
-        <DevMark />
+        <span className="app__header-end">
+          <button
+            type="button"
+            className="iconbtn"
+            onClick={onMenu}
+            aria-label="Backup and more"
+          >
+            ⋯
+          </button>
+          <DevMark />
+        </span>
       </header>
       <main className="matrix" aria-label="Eisenhower matrix">
         <div className="matrix__corner" aria-hidden="true" />
@@ -360,15 +408,20 @@ function Sheet({ onClose, label, children }: {
  * out live so the mapping teaches itself.
  */
 function AddSheet({
+  initialQuadrant = null,
+  initialTitle = '',
   onClose,
   onAdd,
 }: {
+  initialQuadrant?: QuadrantId | null;
+  initialTitle?: string;
   onClose: () => void;
   onAdd: (title: string, quadrant: QuadrantId) => void;
 }) {
-  const [title, setTitle] = useState('');
-  const [important, setImportant] = useState(true);
-  const [urgent, setUrgent] = useState(false);
+  const initial = initialQuadrant ? quadrantMeta(initialQuadrant) : null;
+  const [title, setTitle] = useState(initialTitle);
+  const [important, setImportant] = useState(initial?.important ?? true);
+  const [urgent, setUrgent] = useState(initial?.urgent ?? false);
   const quadrant = quadrantFor(important, urgent);
   const meta = quadrantMeta(quadrant);
 
@@ -487,4 +540,126 @@ function TaskSheet({
       </form>
     </Sheet>
   );
+}
+
+/**
+ * Backup and more. Tasks live only in this browser's storage, so this is
+ * where a person keeps a copy (export, or share it straight to Drive / mail
+ * where the browser can share files) and brings one back (import merges —
+ * it never removes a task). Inside the Android app it also opens the app's
+ * own About screen.
+ */
+function MenuSheet({
+  state,
+  onImport,
+  onClose,
+}: {
+  state: State;
+  onImport: (tasks: Task[]) => void;
+  onClose: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const app = nativeApp();
+  const backupFile = () => {
+    const at = new Date();
+    return new File([toBackup(state.tasks, at)], backupFileName(at), {
+      type: 'application/json',
+    });
+  };
+  const canShareFiles = (() => {
+    try {
+      return typeof navigator.canShare === 'function' && navigator.canShare({ files: [backupFile()] });
+    } catch {
+      return false;
+    }
+  })();
+
+  const exportTasks = () => {
+    const file = backupFile();
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    // Not straight away: the Android app's bridge reads the blob after the
+    // click returns.
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    setMessage(`Exported ${countLabel(state.tasks.length)}.`);
+  };
+
+  const shareTasks = async () => {
+    try {
+      await navigator.share({ files: [backupFile()], title: 'To Do Matrix backup' });
+    } catch (e) {
+      if ((e as Error).name !== 'AbortError') setMessage('Could not share the backup.');
+    }
+  };
+
+  const importFile = async (file: File | undefined) => {
+    if (!file) return;
+    const result = fromBackup(await file.text());
+    if (!result.ok) {
+      setMessage(result.error);
+      return;
+    }
+    onImport(result.tasks);
+    const skipped = result.skipped ? ` (${result.skipped} unreadable, skipped)` : '';
+    setMessage(`Imported ${countLabel(result.tasks.length)}${skipped}.`);
+  };
+
+  return (
+    <Sheet onClose={onClose} label="Backup and more">
+      <div className="menusheet">
+        <p className="tasksheet__label">Backup</p>
+        <p className="menusheet__note">
+          Your tasks are kept only on this device. Export a backup to keep a copy
+          or to move them; importing one adds its tasks to these.
+        </p>
+        <div className="menusheet__row">
+          <button type="button" className="btn" onClick={exportTasks}>
+            Export tasks
+          </button>
+          {canShareFiles && (
+            <button type="button" className="btn" onClick={() => void shareTasks()}>
+              Share…
+            </button>
+          )}
+          <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
+            Import tasks
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            className="menusheet__file"
+            aria-label="Backup file to import"
+            onChange={(e) => {
+              void importFile(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
+        </div>
+        {message && (
+          <p className="menusheet__message" role="status">
+            {message}
+          </p>
+        )}
+        <div className="sheet__actions">
+          {app && (
+            <button type="button" className="btn menusheet__about" onClick={() => app.about()}>
+              About this app
+            </button>
+          )}
+          <button type="button" className="btn btn--primary" onClick={onClose}>
+            Done
+          </button>
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+
+function countLabel(n: number): string {
+  return `${n} ${n === 1 ? 'task' : 'tasks'}`;
 }

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Not a <merge>: the root holds the flash over the padded content. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="MergeRootFrame">
+
+    <ScrollView
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ImageView
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/todo_logo" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center"
+                android:text="@string/app_name"
+                android:textColor="@color/tm_text"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <!-- The running build, as the page shows it under the name. -->
+            <TextView
+                android:id="@+id/version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:gravity="center"
+                android:letterSpacing="0.05"
+                android:textColor="@color/tm_muted"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:letterSpacing="0.1"
+                android:text="@string/tagline"
+                android:textAllCaps="true"
+                android:textColor="@color/tm_muted"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/about_body"
+                android:textColor="@color/tm_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/about_storage"
+                android:textColor="@color/tm_muted"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/source"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="@string/about_source" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/about_license"
+                android:textColor="@color/tm_muted"
+                android:textSize="12sp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:minHeight="32dp" />
+
+            <!-- The developer credit mark: the 36dp badge in a 44dp round
+                 target, as the web header has it. Tap: the full-screen flash. -->
+            <FrameLayout
+                android:id="@+id/devmark"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="center_horizontal"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="@string/dev_badge_label"
+                android:focusable="true">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center"
+                    android:alpha="0.85"
+                    android:background="@color/dev_badge_ground"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/dev_badge"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.TodoMatrix.Circle"
+                    app:strokeColor="@color/tm_border"
+                    app:strokeWidth="1dp" />
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- The badge thrown up full screen for a beat (core/DevFlash.kt). Over
+         the system bars too: the veil is not padded by the insets. -->
+    <FrameLayout
+        android:id="@+id/flash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/dev_veil"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/flash_lockup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/flash_badge"
+                android:layout_width="256dp"
+                android:layout_height="256dp"
+                android:contentDescription="@string/dev_badge_alt"
+                android:elevation="12dp"
+                android:src="@drawable/dev_badge_full"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.TodoMatrix.Circle" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.08"
+                android:text="@string/dev_handle"
+                android:textColor="@color/dev_handle"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>
