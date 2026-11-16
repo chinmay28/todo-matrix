@@ -38,6 +38,15 @@ offline.
   quadrant; the installed PWA's long-press shortcuts and the Android app's
   launcher shortcuts and share target all use it (`src/launch.ts`).
 
+## Android app
+
+**[To Do Matrix for Android](docs/android.md)** is the same app with nothing
+to host: the whole web app is inside the APK, so it needs no server and no
+network, and adds launcher shortcuts per quadrant, a share target, a
+home-screen widget and backups to Downloads. Install
+[`todo-matrix.apk`](https://github.com/chinmay28/todo-matrix/releases/latest/download/todo-matrix.apk)
+from the latest release. How it is built: [`apps/android`](apps/android/README.md).
+
 ## Quick start (self-host)
 
 One command, run as root on Ubuntu / Debian / Raspberry Pi OS, installs
@@ -115,7 +124,7 @@ Requires Node >= 20.
 ```bash
 npm install
 npm run dev        # http://localhost:5173 (also reachable on your tailnet)
-npm test           # vitest (store + component tests)
+npm test           # vitest (store, component, bridge tests) + the icon drift check
 npm run typecheck  # tsc --noEmit
 npm run build      # typecheck + production bundle in dist/
 npm run build:android  # the same bundle without the service worker, for the APK
@@ -138,7 +147,19 @@ src/styles.css        mobile-first styling, dark mode, safe-area insets
 scripts/version.mjs   the one place the version number is assembled
 scripts/serve.mjs     dependency-free static server (production serving path)
 scripts/quickstart.sh one-command self-host installer / upgrader / uninstaller (systemd)
+scripts/icons.mjs     derives every Android icon from public/icon.svg (npm run icons)
+apps/android/         the Android app (Kotlin; the web bundle in its assets)
+docs/android.md       the Android app's user guide
 ```
+
+## Releases
+
+Pushing a `v*` tag, a manual dispatch, or a push to `main` whose version has a
+`## vYEAR.MONTH.PATCH` section in [`CHANGELOG.md`](CHANGELOG.md) runs
+[`release.yml`](.github/workflows/release.yml): it refuses patch 0 and a tag
+that isn't its commit's version, then publishes `todo-matrix-<version>.tar.gz`
+(the built `www/` and `serve.mjs`), `todo-matrix.apk` and `SHA256SUMS`, with
+that changelog section as the release notes.
 
 The reducer and persistence layer are pure and UI-free (`store.ts`), so the
 component layer stays a thin shell over `dispatch` — and both are covered by

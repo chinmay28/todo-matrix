@@ -1,0 +1,109 @@
+name: To Do Matrix (Android app)
+
+# Builds the phone app and runs its tests whenever it changes, or anything it
+# packages does: the APK carries the web app itself (npm run build:android,
+# in assets/web/), so a change to the web app is a change to the app. The
+# web app's own tests cover the hooks the app drives it through (src/launch.ts,
+# src/native.ts, the backup menu), and `npm test` also fails if the app's
+# icons have drifted from public/icon.svg.
+
+on:
+  pull_request:
+    paths:
+      - "apps/android/**"
+      - "src/**"
+      - "public/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.ts"
+      - "build-version.ts"
+      - "scripts/version.mjs"
+      - "scripts/icons.mjs"
+      - ".github/workflows/android.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/android/**"
+      - "src/**"
+      - "public/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.ts"
+      - "build-version.ts"
+      - "scripts/version.mjs"
+      - "scripts/icons.mjs"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and test the APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the bundle's version is the commit count
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # The web side first: its tests (and the icon drift check), then the
+      # bundle the APK carries. Gradle is then told not to build it again.
+      - name: Web tests and bundle
+        working-directory: .
+        run: |
+          npm ci
+          npm test
+          npm run build:android
+
+      # Everything the app decides, as plain JVM tests.
+      - name: Unit tests
+        run: ./gradlew --no-daemon :core:test
+
+      # The runner image ships the Android SDK; ANDROID_HOME points at it.
+      - name: Lint
+        run: ./gradlew --no-daemon -PwebBuild=false :app:lintDebug
+
+      - name: Build
+        run: ./gradlew --no-daemon -PwebBuild=false :app:assembleRelease
+
+      # An APK without the web bundle installs fine and shows nothing, so its
+      # absence fails the build — as does a service worker in it (a PWA
+      # build packaged by mistake) or a network permission it must not have.
+      - name: Check the APK
+        run: |
+          apk=$(ls app/build/outputs/apk/release/*.apk)
+          contents=$(unzip -l "$apk")
+          for f in assets/web/index.html assets/todomatrix-bridge.js; do
+            grep -q " $f\$" <<<"$contents" || { echo "no $f in $apk" >&2; exit 1; }
+          done
+          grep -q " assets/web/assets/index-.*\.js\$" <<<"$contents" || { echo "no bundled script in $apk" >&2; exit 1; }
+          if grep -q " assets/web/sw.js\$" <<<"$contents"; then echo "a service worker is in $apk" >&2; exit 1; fi
+          aapt=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          if "$aapt" dump permissions "$apk" | grep -q "android.permission.INTERNET"; then
+            echo "$apk asks for INTERNET" >&2; exit 1
+          fi
+          echo "web bundle present, no service worker, no network permission"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: todo-matrix-apk
+          path: apps/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
