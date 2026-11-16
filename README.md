@@ -83,11 +83,16 @@ schema change can migrate.
 ## Versioning
 
 Versions are calendar-based, `vYEAR.MONTH.<commit count>` (the scheme shared
-with [sand-vault](https://github.com/chinmay28/sand-vault)): `v2026.8.311` is
-the 311th commit on the 2026.8 line. `Year`/`Month` are constants in
-`scripts/version.mjs` — the one place the number is assembled — and the patch
-number can only come from git, so it's stamped into the bundle at build time
-(Vite `define`). An unstamped build reports patch `0`.
+with [sand-vault](https://github.com/chinmay28/sand-vault)): `v2026.11.311` is
+the 311th commit, made in November 2026. YEAR.MONTH is the month of HEAD's
+**committer date**, in the committer's own timezone, so nobody bumps anything:
+the line moves with the first commit of a new month, and a rebuild of an old
+commit still names the version it shipped as. It is never the build clock.
+[`scripts/version.mjs`](scripts/version.mjs) is the one place the number is
+assembled (`--patch` prints the count, `--date` the commit's `YYYY-MM`); Vite
+inlines it into the bundle (`define`) and the Android build stamps the same
+string and count into the APK, so the header, the APK and the release agree.
+Without git (a tarball) it falls back to the build month and patch `0`.
 
 The count needs the full commit graph: a `--depth 1` clone answers it with
 `1`, silently, so `version.mjs` refuses a shallow repo (reports 0 instead of
