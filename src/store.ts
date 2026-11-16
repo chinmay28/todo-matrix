@@ -1,4 +1,4 @@
-import { isQuadrantId, type QuadrantId, type Task } from './types.js';
+import { isQuadrantId, QUADRANTS, type QuadrantId, type Task } from './types.js';
 
 export interface State {
   tasks: Task[];
@@ -10,7 +10,9 @@ export type Action =
   | { type: 'move'; id: string; quadrant: QuadrantId }
   | { type: 'rename'; id: string; title: string }
   | { type: 'remove'; id: string }
-  | { type: 'clearDone'; quadrant: QuadrantId };
+  | { type: 'clearDone'; quadrant: QuadrantId }
+  /** Merge tasks from a backup: same id → the backup's copy, new id → added. */
+  | { type: 'import'; tasks: Task[] };
 
 export const emptyState: State = { tasks: [] };
 
@@ -48,6 +50,16 @@ export function reduce(state: State, action: Action): State {
           (t) => t.quadrant !== action.quadrant || t.completedAt === null,
         ),
       };
+    case 'import': {
+      // A merge, never a replace: importing can't lose a task this device
+      // already holds. Order stays capture order — existing tasks keep their
+      // place, new ones follow.
+      const incoming = new Map(action.tasks.map((t) => [t.id, t]));
+      const kept = state.tasks.map((t) => incoming.get(t.id) ?? t);
+      const known = new Set(state.tasks.map((t) => t.id));
+      const added = [...incoming.values()].filter((t) => !known.has(t.id));
+      return { tasks: [...kept, ...added] };
+    }
   }
 }
 
@@ -58,6 +70,13 @@ function mapTask(state: State, id: string, fn: (t: Task) => Task): State {
 /** Open tasks of a quadrant, oldest first — the order they were captured in. */
 export function openTasks(state: State, quadrant: QuadrantId): Task[] {
   return state.tasks.filter((t) => t.quadrant === quadrant && t.completedAt === null);
+}
+
+/** The open-task count of every quadrant — what the matrix cards show. */
+export function openCounts(state: State): Record<QuadrantId, number> {
+  const counts = Object.fromEntries(QUADRANTS.map((q) => [q.id, 0])) as Record<QuadrantId, number>;
+  for (const t of state.tasks) if (t.completedAt === null) counts[t.quadrant] += 1;
+  return counts;
 }
 
 /** Completed tasks of a quadrant, most recently finished first. */
@@ -103,7 +122,7 @@ export function save(storage: StorageLike, state: State): void {
   }
 }
 
-function isTask(value: unknown): value is Task {
+export function isTask(value: unknown): value is Task {
   if (typeof value !== 'object' || value === null) return false;
   const t = value as Record<string, unknown>;
   return (

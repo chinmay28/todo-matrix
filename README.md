@@ -30,6 +30,13 @@ offline.
   (one tap, chips colored by destination), or delete it.
 - **Nothing is mandatory beyond a title.** No due dates, tags, or projects —
   the quadrant *is* the prioritization.
+- **Backups are a file you keep.** The **⋯** button exports every task as a
+  JSON file (or shares it, where the browser can share files) and imports one
+  back — merging, so an import never removes a task.
+- **Shortcuts open the add sheet pre-set.** `/#add=do` (or `schedule`,
+  `delegate`, `later`, optionally `&title=…`) opens the add sheet for that
+  quadrant; the installed PWA's long-press shortcuts and the Android app's
+  launcher shortcuts and share target all use it (`src/launch.ts`).
 
 ## Quick start (self-host)
 
@@ -111,6 +118,7 @@ npm run dev        # http://localhost:5173 (also reachable on your tailnet)
 npm test           # vitest (store + component tests)
 npm run typecheck  # tsc --noEmit
 npm run build      # typecheck + production bundle in dist/
+npm run build:android  # the same bundle without the service worker, for the APK
 npm run preview    # serve the production build
 ```
 
@@ -122,6 +130,9 @@ the machine's address; `.ts.net` hosts (Tailscale MagicDNS) are pre-allowed.
 ```
 src/types.ts          quadrant definitions + the importance/urgency → quadrant mapping
 src/store.ts          state reducer, task queries, localStorage persistence
+src/backup.ts         the backup file format (export / import)
+src/launch.ts         the #add=… launch hash (shortcuts, share target)
+src/native.ts         detection of the Android app's bridge (window.todomatrixApp)
 src/app.tsx           all UI: matrix overview, quadrant focus view, bottom sheets
 src/styles.css        mobile-first styling, dark mode, safe-area insets
 scripts/version.mjs   the one place the version number is assembled
